@@ -1,0 +1,18 @@
+######################################
+# Redmine configuration
+######################################
+
+######################################
+# SMTP server using TLS (GMail)
+######################################
+production:
+  email_delivery:
+    delivery_method: :smtp
+    smtp_settings:
+      enable_starttls_auto: true
+      address: "smtp.gmail.com"
+      port: 587
+      domain: "forgeservicelab.fi" # 'your.domain.com' for GoogleApps
+      authentication: :plain
+      user_name: "support@forgeservicelab.fi"
+      password: "Tummapall0h"

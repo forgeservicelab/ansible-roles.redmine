@@ -1,0 +1,94 @@
+---
+# tasks file for redmine
+- name: Disable ruby gem documentation
+  lineinfile:
+    dest: /usr/local/etc/gemrc
+    line: "{{ 'gem:' + ' --no-ri --no-rdoc' }}"
+    create: yes
+    state: present
+
+- name: install ruby gems
+  gem:
+    name: "{{ item }}"
+    user_install: no
+  with_items:
+    - rails
+    - bundler
+
+- name: install required packages
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - libmagickwand-dev
+    - nginx
+    - libpq-dev
+    - thin
+
+- name: Create redmine user
+  user:
+    name: redmine
+    home: "{{ redmine_dir }}"
+    createhome: no
+    system: yes
+
+- name: Get redmine
+  git:
+    repo: https://github.com/redmine/redmine.git
+    accept_hostkey: yes
+    dest: "{{ redmine_dir }}"
+    version: 3.0.1
+
+- name: Ensure redmine permissions
+  file:
+    path: "{{ redmine_dir }}"
+    owner: redmine
+    group: redmine
+    recurse: yes
+    state: directory
+
+- name: Upload database configuration
+  template:
+    src: database.psql.yml
+    dest: "{{ redmine_dir }}/config/database.yml"
+    owner: redmine
+    group: redmine
+
+- name: Upload redmine configuration
+  template:
+    src: redmine.config.yml
+    dest: "{{ redmine_dir }}/config/configuration.yml"
+    owner: redmine
+    group: redmine
+
+- name: Install dependencies
+  command: bundle install --without development test
+  args:
+    chdir: "{{ redmine_dir }}"
+  environment:
+    RAILS_ENV: production
+  sudo_user: redmine
+
+- name: Generate session store secret
+  command: bundle exec rake generate_secret_token
+  args:
+    chdir: "{{ redmine_dir }}"
+  environment:
+    RAILS_ENV: production
+  sudo_user: redmine
+
+- name: Migrate database
+  command: bundle exec rake db:migrate
+  args:
+    chdir: "{{ redmine_dir }}"
+  environment:
+    RAILS_ENV: production
+  sudo_user: redmine
+
+- name: Load default dataset
+  command: bundle exec rake redmine:load_default_data
+  args:
+    chdir: "{{ redmine_dir }}"
+  environment:
+    RAILS_ENV: production
+    REDMINE_LANG: en
+  sudo_user: redmine
