@@ -92,3 +92,11 @@
     RAILS_ENV: production
     REDMINE_LANG: en
   sudo_user: redmine
+
+- name: Install plugins
+  git:
+    repo: "{{ item.repo }}"
+    dest: "{{ redmine_dir }}/plugins"
+    version: "{{ item.version }}"
+  with_items:
+    - "{{ redmine_plugins }}"
