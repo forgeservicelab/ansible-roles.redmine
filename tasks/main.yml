@@ -96,7 +96,8 @@
 - name: Install plugins
   git:
     repo: "{{ item.repo }}"
-    dest: "{{ redmine_dir }}/plugins"
-    version: "{{ item.version }}"
+    dest: "{{ redmine_dir }}/plugins/{{ item.name }}"
+    version: "{{ item.version | default(HEAD) }}"
   with_items:
     - "{{ redmine_plugins }}"
+  when: redmine_plugins is defined
