@@ -1,2 +1,11 @@
 ---
 # handlers file for redmine
+- name: restart thin
+  service:
+    name: thin
+    state: restarted
+
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
