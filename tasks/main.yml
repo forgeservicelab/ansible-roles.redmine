@@ -12,7 +12,7 @@
     name: "{{ item }}"
     user_install: no
   with_items:
-    - rails
+    - bundler
 
 - name: install required packages
   apt:
@@ -31,12 +31,22 @@
     createhome: no
     system: yes
 
+- name: Enable SSH_AUTH_SOCK on sudo calls
+  copy:
+    src: ssh_auth_sock
+    dest: /etc/sudoers.d/ssh_auth_sock
+    validate: 'visudo -cf %s'
+    owner: root
+    group: root
+    mode: 0440
+
 - name: Get redmine
   git:
-    repo: https://github.com/redmine/redmine.git
+    repo: "{{ redmine_repo }}"
     accept_hostkey: yes
+    ssh_opts: -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
     dest: "{{ redmine_dir }}"
-    version: 3.0.1
+    version: "{{ redmine_version }}"
 
 - name: Ensure redmine permissions
   file:
@@ -60,13 +70,6 @@
     owner: redmine
     group: redmine
 
-    # - name: TEMPORARY | upload Gemfile.lock
-    #   copy:
-    #     src: Gemfile.lock
-    #     dest: "{{ redmine_dir }}"
-    #     owner: redmine
-    #     group: redmine
-
 - name: Install dependencies
   # command: bundle install --deployment --without development test
   command: bundle install --without development test
@@ -84,38 +87,6 @@
     RAILS_ENV: production
   sudo_user: redmine
 
-# - name: Enable SSH_AUTH_SOCK on sudo calls
-#   copy:
-#     src: ssh_auth_sock
-#     dest: /etc/sudoers.d/ssh_auth_sock
-#     validate: 'visudo -cf %s'
-#     owner: root
-#     group: root
-#     mode: 0440
-#
-# - name: Include plugin definitions
-#   include_vars: "{{ redmine_plugin_file }}"
-#   when: redmine_plugin_file is defined
-#
-# - name: Install plugins
-#   git:
-#     accept_hostkey: yes
-#     ssh_opts: -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
-#     repo: "{{ item.repo }}"
-#     dest: "{{ redmine_dir }}/plugins/{{ item.name }}"
-#     version: "{{ item.version | default('HEAD') }}"
-#   with_items:
-#     - "{{ redmine_plugins }}"
-#   when: redmine_plugins is defined
-#
-# - name: Migrate plugins
-#   command: bundle exec rake redmine:plugins:migrate
-#   args:
-#     chdir: "{{ redmine_dir }}"
-#   environment:
-#     RAILS_ENV: production
-#     sudo_user: redmine
-
 - name: Generate session store secret
   command: bundle exec rake generate_secret_token
   args:
@@ -132,6 +103,19 @@
     RAILS_ENV: production
     REDMINE_LANG: en
   sudo_user: redmine
+
+- name: Ensure thin run directory permissions
+  file:
+    path: /var/run/thin
+    state: directory
+    owner: redmine
+    group: redmine
+
+- name: Create softlink for thin server
+  file:
+    path: /etc/init.d/redmine
+    src: /etc/init.d/thin
+    state: link
 
 - name: Upload Thin configuration
   template:
