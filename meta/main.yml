@@ -1,8 +1,8 @@
 ---
 galaxy_info:
-  author: your name
-  description:
-  company: your company (optional)
+  author: Jorge Rodriguez
+  description: Installs Redmine
+  company: FORGE Service Lab
   # Some suggested licenses:
   # - BSD (default)
   # - MIT
@@ -11,7 +11,7 @@ galaxy_info:
   # - Apache
   # - CC-BY
   license: license (GPLv2, CC-BY, etc)
-  min_ansible_version: 1.2
+  min_ansible_version: 1.8
   #
   # Below are all platforms currently available. Just uncomment
   # the ones that apply to your role. If you don't see your
@@ -94,18 +94,18 @@ galaxy_info:
   #  versions:
   #  - all
   #  - any
-  #- name: Debian
-  #  versions:
+  - name: Debian
+    versions:
   #  - all
   #  - etch
   #  - lenny
   #  - squeeze
-  #  - wheezy
+    - wheezy
   #
   # Below are all categories currently available. Just as with
   # the platforms above, uncomment those that apply to your role.
   #
-  #categories:
+  categories:
   #- cloud
   #- cloud:ec2
   #- cloud:gce
@@ -114,7 +114,7 @@ galaxy_info:
   #- database
   #- database:nosql
   #- database:sql
-  #- development
+  - development
   #- monitoring
   #- networking
   #- packaging
