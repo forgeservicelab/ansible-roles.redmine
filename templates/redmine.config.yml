@@ -3,16 +3,16 @@
 ######################################
 
 ######################################
-# SMTP server using TLS (GMail)
+# SMTP server using TLS (Mandrill)
 ######################################
 production:
   email_delivery:
     delivery_method: :smtp
     smtp_settings:
       enable_starttls_auto: true
-      address: "smtp.gmail.com"
+      address: "smtp.mandrillapp.com"
       port: 587
-      domain: "forgeservicelab.fi" # 'your.domain.com' for GoogleApps
+      domain: "{{ mandrillapp_domain }}"
       authentication: :plain
-      user_name: "support@forgeservicelab.fi"
-      password: "Tummapall0h"
+      user_name: "{{ mandrillapp_username }}"
+      password: "{{ mandrillapp_password }}"
