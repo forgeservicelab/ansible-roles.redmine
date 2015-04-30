@@ -7,13 +7,6 @@
     create: yes
     state: present
 
-- name: install ruby gems
-  gem:
-    name: "{{ item }}"
-    user_install: no
-  with_items:
-    - bundler
-
 - name: install required packages
   apt:
     name: "{{ item }}"
@@ -30,6 +23,26 @@
     home: "{{ redmine_dir }}"
     createhome: no
     system: yes
+
+- name: Add ruby path to redmine user path
+  lineinfile:
+    dest: "{{ redmine_dir }}/.profile"
+    create: yes
+    line: "{{ item }}"
+    owner: redmine
+    group: redmine
+    mode: 0644
+  with_items:
+    - ". /etc/environment"
+    - "export PATH=$PATH:{{ redmine_dir }}/.gem/ruby/2.1.0/bin"
+
+- name: install gems
+  gem:
+    name: "{{ item }}"
+    user_install: yes
+  with_items:
+    - bundler
+  sudo_user: redmine
 
 - name: Enable SSH_AUTH_SOCK on sudo calls
   copy:
@@ -71,13 +84,12 @@
     group: redmine
 
 - name: Install dependencies
-  # command: bundle install --deployment --without development test
-  command: bundle install --without development test
+  command: bundle install --path vendor/bundle --without development test
   args:
     chdir: "{{ redmine_dir }}"
   environment:
     RAILS_ENV: production
-  # sudo_user: redmine
+  sudo_user: redmine
 
 - name: Migrate database
   command: bundle exec rake db:migrate
