@@ -28,13 +28,10 @@
   lineinfile:
     dest: "{{ redmine_dir }}/.profile"
     create: yes
-    line: "{{ item }}"
+    line: . /etc/environment
     owner: redmine
     group: redmine
     mode: 0644
-  with_items:
-    - ". /etc/environment"
-    - "export PATH=$PATH:{{ redmine_dir }}/.gem/ruby/2.1.0/bin"
 
 - name: install gems
   gem:
