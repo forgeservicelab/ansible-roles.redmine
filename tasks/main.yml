@@ -137,6 +137,22 @@
     src: nginx.redmine.j2
     dest: /etc/nginx/sites-available/redmine
 
+- name: Configure log rotation for redmine
+  template:
+    src: redmine.logrotate
+    dest: /etc/logrotate.d/redmine
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Additional redmine configuration for production env
+  template:
+    src: additional_environment.rb
+    dest: "{{ redmine_dir }}/config/additional_environment.rb"
+    owner: redmine
+    group: redmine
+  when: target == "production"
+
 - name: Enable redmine configuration on nginx
   file:
     src: /etc/nginx/sites-available/redmine
